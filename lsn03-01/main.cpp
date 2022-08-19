@@ -2,6 +2,9 @@
 #include <vector>
 #include <optional>
 #include <algorithm>
+#include <sstream>
+#include <fstream>
+#include <tuple>
 
 //using namespace std;
 
@@ -16,7 +19,7 @@ struct Person {
 };
 
 std::ostream& operator<< (std::ostream& out, const Person& pers){
-    out << pers.lastName << " " << pers.firstName << " ";
+    out << pers.lastName << "\t" << pers.firstName << "\t";
     if (pers.fathersName)
         out << *pers.fathersName;
     return out;
@@ -65,11 +68,71 @@ private:
     std::vector<std::pair<Person, PhoneNumber>> book;
 public:
     PhoneBook (std::ifstream& file){
-        
-        
-        book[0].first.fathersName;
+        std::string ln;
+        while (std::getline(file, ln)){
+            std::pair<Person, PhoneNumber> buff;
+
+            book.push_back(buff);
+        }
+        //не разобрался с раскладыванием строки
+
     }
+    
+    friend std::ostream& operator<< (std::ostream& out, const PhoneBook& phBook);
+
+    void SortByName (){ 
+        std::sort(book.begin(), book.end(), 
+            [] (const std::pair<Person, PhoneNumber> p1, const std::pair<Person, PhoneNumber> p2) 
+                -> bool {return p1.first < p2.first;});   
+    }
+
+    void SortByPhone (){ 
+        std::sort(book.begin(), book.end(), 
+            [] (const std::pair<Person, PhoneNumber> p1, const std::pair<Person, PhoneNumber> p2) 
+                -> bool {return p1.second < p2.second;}); 
+    }
+
+    std::string GetPhoneNumber (std::string lookingLastName){
+        std::string outStr;
+        std::stringstream number;
+        size_t counter { 0 };
+
+        for (size_t i = 0; i < book.size(); i++)
+        {
+            if (book[i].first.lastName == lookingLastName){
+                number << book[i].second << " ";
+                counter++;
+            }
+        }
+        if (counter == 0) {
+            outStr = "not found";
+        } else if (counter > 1) {
+            outStr = "found more than 1 ";
+        }
+        number >> outStr;
+        return outStr;
+    }
+
+    void ChangePhoneNumber (Person person, PhoneNumber phNumber){
+        for (size_t i = 0; i < book.size(); i++)
+        {
+            if (book[i].first == person){
+                book[i].second = phNumber;
+                break;
+            }
+        }
+    };
+
 };
+
+std::ostream& operator<< (std::ostream& out, const PhoneBook& phBook){
+    for (size_t i = 0; i < phBook.book.size(); i++)
+    {
+        out << phBook.book[i].first << "\t";
+        out << phBook.book[i].second << "\n";      
+    }
+    return out;
+}
 
 int main (){
 
